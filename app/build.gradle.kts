@@ -10,7 +10,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "app.jellylauncher.Tv"
+        applicationId = "app.foyer"
         minSdk = 23
         targetSdk = 35
         val build = (project.findProperty("buildNumber") as String?)?.toIntOrNull() ?: 1
