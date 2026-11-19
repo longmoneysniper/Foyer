@@ -5,7 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -61,7 +61,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.Shadow
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
