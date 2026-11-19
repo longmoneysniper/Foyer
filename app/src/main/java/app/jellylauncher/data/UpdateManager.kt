@@ -18,7 +18,7 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 /** Your GitHub repo that builds Foyer. Change this if you rename the repo. */
-const val UPDATE_REPO = "longmoneysniper/encore-launcher"
+const val UPDATE_REPO = "longmoneysniper/Foyer"
 
 data class UpdateInfo(val build: Int, val url: String)
 
