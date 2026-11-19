@@ -96,8 +96,8 @@ fun HomeScreen(
 
     // Size things from the screen height so the layout fits any TV.
     val u = (LocalConfiguration.current.screenHeightDp / 540f).coerceIn(0.6f, 1.8f)
-    val posterHeight = (190 * u).dp
-    val posterWidth = (127 * u).dp
+    val posterHeight = (238 * u).dp
+    val posterWidth = (159 * u).dp
     val dockTile = (46 * u).dp
 
     var focusedId by remember { mutableStateOf<String?>(null) }
@@ -158,9 +158,9 @@ fun HomeScreen(
         Box(
             Modifier.fillMaxSize().background(
                 Brush.horizontalGradient(
-                    0f to Bg.copy(alpha = 0.93f),
-                    0.5f to Bg.copy(alpha = 0.75f),
-                    1f to Bg.copy(alpha = 0.5f),
+                    0f to Bg.copy(alpha = 0.97f),
+                    0.45f to Bg.copy(alpha = 0.82f),
+                    1f to Bg.copy(alpha = 0.40f),
                 )
             )
         )
@@ -266,7 +266,7 @@ fun HomeScreen(
 
             // Name of the focused dock app
             Box(Modifier.fillMaxWidth().height(20.dp), contentAlignment = Alignment.Center) {
-                Text(dockLabel, color = Color.White.copy(alpha = 0.85f), fontSize = 13.sp)
+                Text(dockLabel, color = Color.White.copy(alpha = 0.9f), fontSize = 15.sp)
             }
 
             // Dock
@@ -371,13 +371,13 @@ private fun HeroDetails(hero: ResumeCard, u: Float, scores: Scores?) {
             Text(
                 hero.title,
                 color = Color.White,
-                fontSize = 40.sp,
+                fontSize = 46.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 style = TextStyle(
                     fontFamily = FontFamily.Serif,
-                    lineHeight = 46.sp,
+                    lineHeight = 52.sp,
                     shadow = Shadow(Color.Black.copy(alpha = 0.6f), Offset(0f, 3f), 10f),
                 ),
             )
@@ -386,8 +386,8 @@ private fun HeroDetails(hero: ResumeCard, u: Float, scores: Scores?) {
             Spacer(Modifier.height(6.dp))
             Text(
                 hero.subtitle,
-                color = Color.White.copy(alpha = 0.9f),
-                fontSize = 16.sp,
+                color = Color.White.copy(alpha = 0.92f),
+                fontSize = 19.sp,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -398,8 +398,8 @@ private fun HeroDetails(hero: ResumeCard, u: Float, scores: Scores?) {
                 for (chip in hero.chips) {
                     Text(
                         chip,
-                        color = Color.White.copy(alpha = 0.9f),
-                        fontSize = 12.sp,
+                        color = Color.White.copy(alpha = 0.92f),
+                        fontSize = 14.sp,
                         maxLines = 1,
                         modifier = Modifier
                             .border(1.dp, Color.White.copy(alpha = 0.35f), RoundedCornerShape(4.dp))
@@ -412,12 +412,12 @@ private fun HeroDetails(hero: ResumeCard, u: Float, scores: Scores?) {
         val status = listOf(hero.resumeAt, hero.remaining).filter { it.isNotEmpty() }.joinToString(" · ")
         if (status.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
-            Text(status, color = Color.White.copy(alpha = 0.85f), fontSize = 14.sp)
+            Text(status, color = Color.White.copy(alpha = 0.9f), fontSize = 17.sp, fontWeight = FontWeight.Medium)
         }
         if (hero.progress > 0f) {
             Spacer(Modifier.height(8.dp))
             Box(
-                Modifier.width(170.dp).height(3.dp).background(Color.White.copy(alpha = 0.25f))
+                Modifier.width(220.dp).height(4.dp).background(Color.White.copy(alpha = 0.25f))
             ) {
                 Box(Modifier.fillMaxHeight().fillMaxWidth(hero.progress.coerceIn(0f, 1f)).background(Gold))
             }
@@ -426,10 +426,10 @@ private fun HeroDetails(hero: ResumeCard, u: Float, scores: Scores?) {
             Spacer(Modifier.height(10.dp))
             Text(
                 hero.overview,
-                color = Color.White.copy(alpha = 0.7f),
-                fontSize = 13.sp,
-                lineHeight = 18.sp,
-                maxLines = 3,
+                color = Color.White.copy(alpha = 0.82f),
+                fontSize = 16.sp,
+                lineHeight = 23.sp,
+                maxLines = 4,
                 overflow = TextOverflow.Ellipsis,
             )
         }
@@ -449,14 +449,14 @@ private fun RatingsRow(card: ResumeCard, scores: Scores?) {
         val star = imdb ?: communityText
         if (star != null) {
             ScoreBadge(if (imdb != null) "IMDb" else "Community", star) {
-                RatingLogo(if (imdb != null) "rating_imdb" else "") { Text("★", color = Gold, fontSize = 14.sp) }
+                RatingLogo(if (imdb != null) "rating_imdb" else "") { Text("★", color = Gold, fontSize = 18.sp) }
             }
         }
         if (critics != null) {
             val pct = critics.removeSuffix("%").toIntOrNull() ?: 100
             ScoreBadge(if (scores?.critics != null) "RT Critics" else "Critics", critics) {
                 RatingLogo(if (scores?.critics != null) "rating_rt_critics" else "") {
-                    Box(Modifier.size(12.dp).background(if (pct >= 60) Color(0xFFE5483C) else Color(0xFF6BBE45), CircleShape))
+                    Box(Modifier.size(16.dp).background(if (pct >= 60) Color(0xFFE5483C) else Color(0xFF6BBE45), CircleShape))
                 }
             }
         }
@@ -464,7 +464,7 @@ private fun RatingsRow(card: ResumeCard, scores: Scores?) {
             val pct = audience.removeSuffix("%").toIntOrNull() ?: 100
             ScoreBadge("RT Audience", audience) {
                 RatingLogo("rating_rt_audience") {
-                    Box(Modifier.size(12.dp).background(if (pct >= 60) Color(0xFFFFA726) else Color(0xFF8D8D8D), RoundedCornerShape(3.dp)))
+                    Box(Modifier.size(16.dp).background(if (pct >= 60) Color(0xFFFFA726) else Color(0xFF8D8D8D), RoundedCornerShape(3.dp)))
                 }
             }
         }
@@ -486,7 +486,7 @@ private fun RatingLogo(name: String, fallback: @Composable () -> Unit) {
             painter = painterResource(id),
             contentDescription = null,
             contentScale = ContentScale.Fit,
-            modifier = Modifier.height(18.dp).widthIn(max = 48.dp),
+            modifier = Modifier.height(24.dp).widthIn(max = 64.dp),
         )
     } else {
         fallback()
@@ -499,8 +499,8 @@ private fun ScoreBadge(label: String, score: String, icon: @Composable () -> Uni
         icon()
         Spacer(Modifier.width(5.dp))
         Column {
-            Text(score, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1)
-            Text(label, color = Color.White.copy(alpha = 0.6f), fontSize = 10.sp, maxLines = 1)
+            Text(score, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+            Text(label, color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp, maxLines = 1)
         }
     }
 }
@@ -522,7 +522,7 @@ private fun SectionChip(label: String, selected: Boolean, onFocused: () -> Unit)
         Text(
             label,
             color = if (selected) Gold else Color.White.copy(alpha = 0.65f),
-            fontSize = 13.sp,
+            fontSize = 16.sp,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
         )
     }
