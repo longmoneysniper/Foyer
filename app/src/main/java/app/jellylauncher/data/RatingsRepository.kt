@@ -35,7 +35,7 @@ class RatingsRepository(context: Context, private val prefs: Prefs) {
 
     /** [isShow] is true for series and episodes, false for movies. */
     suspend fun get(imdbId: String, isShow: Boolean): Scores? = withContext(Dispatchers.IO) {
-        val cacheKey = (if (isShow) "show:" else "movie:") + imdbId
+        val cacheKey = "v2:" + (if (isShow) "show:" else "movie:") + imdbId
         val saved = sp.getString(cacheKey, null)
         if (saved != null) {
             try {
@@ -58,17 +58,24 @@ class RatingsRepository(context: Context, private val prefs: Prefs) {
 
             fun valueOf(vararg sources: String): Double? {
                 val entry: JsonObject = ratings.firstOrNull { it["source"]?.jsonPrimitive?.content in sources } ?: return null
-                val v = entry["value"]
-                if (v == null || v is JsonNull) return null
-                return v.jsonPrimitive.content.toDoubleOrNull()?.takeIf { it > 0.0 }
+                for (field in listOf("value", "score")) {
+                    val v = entry[field]
+                    if (v == null || v is JsonNull) continue
+                    val d = v.jsonPrimitive.content.toDoubleOrNull()
+                    if (d != null && d > 0.0) return d
+                }
+                return null
             }
 
             val scores = Scores(
-                imdb = valueOf("imdb")?.let { String.format("%.1f", it) },
+                imdb = valueOf("imdb")?.let { String.format("%.1f", if (it > 10.0) it / 10.0 else it) },
                 critics = valueOf("tomatoes")?.let { "${it.toInt()}%" },
                 audience = valueOf("tomatoesaudience", "popcorn")?.let { "${it.toInt()}%" },
             )
-            sp.edit().putString(cacheKey, json.encodeToString(Scores.serializer(), scores)).apply()
+            // Only remember a result that has something in it, so an empty answer is retried later.
+            if (scores.imdb != null || scores.critics != null || scores.audience != null) {
+                sp.edit().putString(cacheKey, json.encodeToString(Scores.serializer(), scores)).apply()
+            }
             scores
         }
     }
