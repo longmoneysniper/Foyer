@@ -303,6 +303,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun checkUpdateNow() {
+        lastUpdateCheck = 0L
+        checkUpdate()
+    }
+
     fun openAllApps() = _state.update { it.copy(showAllApps = true) }
 
     fun closeAllApps() = _state.update { it.copy(showAllApps = false) }
