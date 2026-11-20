@@ -662,46 +662,47 @@ private fun Logo(greeting: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         JellyMark(Modifier.size(28.dp))
         Spacer(Modifier.width(8.dp))
-        Text("Foyer", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+        Text(
+            "FOYER",
+            color = Color(0xFFE50914),
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 4.sp,
+            style = TextStyle(fontFamily = FontFamily(android.graphics.Typeface.create("sans-serif-condensed", android.graphics.Typeface.BOLD))),
+        )
         Spacer(Modifier.width(14.dp))
         Text(greeting, color = Color.White.copy(alpha = 0.55f), fontSize = 14.sp)
     }
 }
 
-/** The logo: a lit doorway (the foyer, where you pick what to watch) with a play button inside. */
+/** The logo: a glowing red play arrow on a dark tile. */
 @Composable
 fun JellyMark(modifier: Modifier = Modifier) {
     Canvas(modifier) {
-        val s = size.width / 96f
+        val s = size.width / 120f
         drawRoundRect(
-            brush = Brush.linearGradient(listOf(Color(0xFF1F1632), Color(0xFF0A0D18))),
-            cornerRadius = androidx.compose.ui.geometry.CornerRadius(22f * s, 22f * s),
+            brush = Brush.linearGradient(listOf(Color(0xFF1C1014), Color(0xFF07070A))),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(28f * s, 28f * s),
         )
-        // light spilling out of the door onto the floor
-        val spill = Path().apply {
-            moveTo(30f * s, 72f * s); lineTo(66f * s, 72f * s); lineTo(80f * s, 88f * s); lineTo(16f * s, 88f * s); close()
-        }
-        drawPath(spill, Color(0xFFFFC145).copy(alpha = 0.25f))
-        // the doorway
-        val door = Path().apply {
-            moveTo(30f * s, 72f * s)
-            lineTo(30f * s, 44f * s)
-            arcTo(androidx.compose.ui.geometry.Rect(30f * s, 26f * s, 66f * s, 62f * s), 180f, 180f, false)
-            lineTo(66f * s, 72f * s)
-            close()
-        }
-        drawPath(door, Color(0xFFFFC145).copy(alpha = 0.15f))
-        drawPath(
-            door,
-            Brush.verticalGradient(listOf(Color(0xFFFFD166), Color(0xFFFF8A5B))),
-            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 6f * s, join = androidx.compose.ui.graphics.StrokeJoin.Round),
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(Color(0x99E50914), Color(0x00E50914)),
+                center = Offset(60f * s, 60f * s),
+                radius = 52f * s,
+            ),
+            radius = 52f * s,
+            center = Offset(60f * s, 60f * s),
         )
-        // play button inside
         val tri = Path().apply {
-            moveTo(43f * s, 47f * s); lineTo(58f * s, 55f * s); lineTo(43f * s, 63f * s); close()
+            moveTo(46f * s, 34f * s); lineTo(88f * s, 60f * s); lineTo(46f * s, 86f * s); close()
         }
-        drawPath(tri, Color.White)
-        drawPath(tri, Color.White, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3f * s, join = androidx.compose.ui.graphics.StrokeJoin.Round))
+        val red = Brush.verticalGradient(
+            colors = listOf(Color(0xFFFF5A63), Color(0xFFC20812)),
+            startY = 30f * s,
+            endY = 90f * s,
+        )
+        drawPath(tri, red)
+        drawPath(tri, red, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 8f * s, join = androidx.compose.ui.graphics.StrokeJoin.Round))
     }
 }
 
