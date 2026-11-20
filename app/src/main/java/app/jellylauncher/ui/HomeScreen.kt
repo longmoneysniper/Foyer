@@ -132,6 +132,14 @@ fun HomeScreen(
     val active = if (selected in sections) selected else sections.firstOrNull() ?: "Continue watching"
     val stripCards = watching
 
+    // Slow zoom on the backdrop so the screen feels alive.
+    val zoom by rememberInfiniteTransition(label = "kb").animateFloat(
+        initialValue = 1f,
+        targetValue = 1.07f,
+        animationSpec = infiniteRepeatable(tween(24000, easing = LinearEasing), RepeatMode.Reverse),
+        label = "zoom",
+    )
+
     // Put focus on the newest Continue Watching item whenever the list's first entry changes.
     val firstCardFocus = remember { FocusRequester() }
     val firstId = watching.firstOrNull()?.id
@@ -143,18 +151,36 @@ fun HomeScreen(
     }
 
     Box(Modifier.fillMaxSize().background(Bg)) {
-        // Calm dark background (no picture behind the apps), with a faint blue glow.
+        // Backdrop of the focused item, dimmed so text and icons stay readable.
+        Crossfade(
+            targetState = hero?.heroImage,
+            animationSpec = tween(800),
+            modifier = Modifier.fillMaxSize().graphicsLayer { scaleX = zoom; scaleY = zoom },
+            label = "hero",
+        ) { url ->
+            if (url != null) {
+                AsyncImage(
+                    model = url,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+        }
         Box(
             Modifier.fillMaxSize().background(
-                Brush.verticalGradient(listOf(Color(0xFF0A0E18), Color(0xFF0B1322), Color(0xFF070A12)))
+                Brush.horizontalGradient(
+                    0f to Bg.copy(alpha = 0.95f),
+                    0.45f to Bg.copy(alpha = 0.78f),
+                    1f to Bg.copy(alpha = 0.40f),
+                )
             )
         )
         Box(
             Modifier.fillMaxSize().background(
-                Brush.radialGradient(
-                    colors = listOf(Color(0x40305A9E), Color.Transparent),
-                    center = Offset(1500f, 150f),
-                    radius = 1400f,
+                Brush.verticalGradient(
+                    0.55f to Color.Transparent,
+                    1f to Bg,
                 )
             )
         )
@@ -311,17 +337,6 @@ fun HomeScreen(
 private fun HeroDetails(hero: ResumeCard, u: Float, scores: Scores?) {
     var logoFailed by remember(hero.id) { mutableStateOf(false) }
     Column {
-        if (hero.kicker.isNotEmpty()) {
-            Text(
-                hero.kicker,
-                color = Gold,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp,
-                style = TextStyle(fontFamily = FontFamily(android.graphics.Typeface.create("sans-serif-condensed", android.graphics.Typeface.BOLD))),
-            )
-            Spacer(Modifier.height(6.dp))
-        }
         if (hero.logo != null && !logoFailed) {
             // Title artwork from Jellyfin; falls back to the text title if it can't load.
             AsyncImage(
@@ -598,34 +613,31 @@ private fun Logo(greeting: String) {
     }
 }
 
-/** The logo: a glowing red play arrow on a dark tile. */
+/** The logo: a "resume" ring (a progress arc with a gold dot where you left off) around a play button. */
 @Composable
 fun JellyMark(modifier: Modifier = Modifier) {
     Canvas(modifier) {
-        val s = size.width / 120f
+        val s = size.width / 96f
+        val stroke = 7f * s
         drawRoundRect(
-            brush = Brush.linearGradient(listOf(Color(0xFF1C1014), Color(0xFF07070A))),
-            cornerRadius = androidx.compose.ui.geometry.CornerRadius(28f * s, 28f * s),
+            brush = Brush.linearGradient(listOf(Color(0xFF16233A), Color(0xFF0A0F1A))),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(22f * s, 22f * s),
         )
-        drawCircle(
-            brush = Brush.radialGradient(
-                colors = listOf(Color(0x99E50914), Color(0x00E50914)),
-                center = Offset(60f * s, 60f * s),
-                radius = 52f * s,
-            ),
-            radius = 52f * s,
-            center = Offset(60f * s, 60f * s),
+        drawArc(
+            brush = Brush.sweepGradient(listOf(Color(0xFF7B5CFF), Color(0xFF00A4DC), Color(0xFF4DE3C4), Color(0xFF7B5CFF))),
+            startAngle = -90f,
+            sweepAngle = 270f,
+            useCenter = false,
+            topLeft = Offset(20f * s, 20f * s),
+            size = androidx.compose.ui.geometry.Size(56f * s, 56f * s),
+            style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke, cap = androidx.compose.ui.graphics.StrokeCap.Round),
         )
+        drawCircle(Color(0xFFFFC145), radius = 5.5f * s, center = Offset(20f * s, 48f * s))
         val tri = Path().apply {
-            moveTo(46f * s, 34f * s); lineTo(88f * s, 60f * s); lineTo(46f * s, 86f * s); close()
+            moveTo(42f * s, 36f * s); lineTo(64f * s, 48f * s); lineTo(42f * s, 60f * s); close()
         }
-        val red = Brush.verticalGradient(
-            colors = listOf(Color(0xFFFF5A63), Color(0xFFC20812)),
-            startY = 30f * s,
-            endY = 90f * s,
-        )
-        drawPath(tri, red)
-        drawPath(tri, red, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 8f * s, join = androidx.compose.ui.graphics.StrokeJoin.Round))
+        drawPath(tri, Color.White)
+        drawPath(tri, Color.White, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3f * s, join = androidx.compose.ui.graphics.StrokeJoin.Round))
     }
 }
 
