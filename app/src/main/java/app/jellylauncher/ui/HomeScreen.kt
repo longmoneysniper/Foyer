@@ -73,6 +73,8 @@ import app.jellylauncher.data.LaunchableApp
 import app.jellylauncher.data.ResumeCard
 import app.jellylauncher.data.Scores
 import coil.compose.AsyncImage
+import coil.imageLoader
+import coil.request.ImageRequest
 import kotlinx.coroutines.delay
 import java.util.Calendar
 import java.util.Date
@@ -93,6 +95,7 @@ fun HomeScreen(
 ) {
     // This is the home screen: Back should never leave it.
     BackHandler {}
+    val context = LocalContext.current
 
     // Size things from the screen height so the layout fits any TV.
     val u = (LocalConfiguration.current.screenHeightDp / 540f).coerceIn(0.6f, 1.8f)
@@ -110,6 +113,14 @@ fun HomeScreen(
         if (h != null) {
             delay(350)
             onHeroChanged(h)
+        }
+    }
+
+    // Warm the image cache so the first frame after a start looks finished.
+    LaunchedEffect(state.cards) {
+        for (c in state.cards.take(4)) {
+            val url = c.heroImage ?: continue
+            context.imageLoader.enqueue(ImageRequest.Builder(context).data(url).build())
         }
     }
 
@@ -142,7 +153,7 @@ fun HomeScreen(
         // Backdrop of the focused item, dimmed so text and icons stay readable.
         Crossfade(
             targetState = hero?.heroImage,
-            animationSpec = tween(500),
+            animationSpec = tween(800),
             modifier = Modifier.fillMaxSize().graphicsLayer { scaleX = zoom; scaleY = zoom },
             label = "hero",
         ) { url ->
@@ -245,9 +256,11 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             itemsIndexed(stripCards, key = { _, card -> card.id }) { index, card ->
+                                val wide = index == 0 && card.cardImage != null
                                 PosterCard(
                                     card = card,
-                                    width = posterWidth,
+                                    wide = wide,
+                                    width = if (wide) posterHeight * 1.6f else posterWidth,
                                     height = posterHeight,
                                     focusRequester = if (index == 0) firstCardFocus else null,
                                     onFocused = {
@@ -319,21 +332,11 @@ fun HomeScreen(
                     FocusCard(
                         modifier = Modifier.size(dockTile),
                         shape = RoundedCornerShape(12.dp),
-                        onFocused = { dockLabel = "Server sign-in" },
+                        onFocused = { dockLabel = "Settings" },
                         onClick = onSettings,
                     ) {
                         Box(Modifier.fillMaxSize().background(CardBg), contentAlignment = Alignment.Center) {
                             SettingsGlyph()
-                        }
-                    }
-                    FocusCard(
-                        modifier = Modifier.size(dockTile),
-                        shape = RoundedCornerShape(12.dp),
-                        onFocused = { dockLabel = "Launcher setup" },
-                        onClick = onSetup,
-                    ) {
-                        Box(Modifier.fillMaxSize().background(CardBg), contentAlignment = Alignment.Center) {
-                            JellyMark(Modifier.size(26.dp))
                         }
                     }
                 }
@@ -564,6 +567,7 @@ private fun RowMessage(state: HomeUiState, height: Dp, onRetry: () -> Unit) {
 @Composable
 private fun PosterCard(
     card: ResumeCard,
+    wide: Boolean,
     width: Dp,
     height: Dp,
     focusRequester: FocusRequester?,
@@ -577,7 +581,7 @@ private fun PosterCard(
         onClick = onClick,
     ) {
         Box(Modifier.fillMaxSize().background(CardBg))
-        val image = card.poster ?: card.cardImage
+        val image = if (wide) card.cardImage ?: card.poster else card.poster ?: card.cardImage
         if (image != null) {
             AsyncImage(
                 model = image,
