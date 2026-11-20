@@ -99,13 +99,15 @@ fun HomeScreen(
 
     // Size things from the screen height so the layout fits any TV.
     val u = (LocalConfiguration.current.screenHeightDp / 540f).coerceIn(0.6f, 1.8f)
-    val posterHeight = (212 * u).dp
-    val posterWidth = (141 * u).dp
-    val dockTile = (46 * u).dp
+    val posterHeight = (176 * u).dp
+    val posterWidth = (117 * u).dp
+    val dockTile = (44 * u).dp
 
     var focusedId by remember { mutableStateOf<String?>(null) }
     var dockLabel by remember { mutableStateOf("") }
-    val hero = state.cards.firstOrNull { it.id == focusedId } ?: state.cards.firstOrNull()
+    // Only Continue watching is shown.
+    val watching = state.cards.filter { it.section == "Continue watching" }
+    val hero = watching.firstOrNull { it.id == focusedId } ?: watching.firstOrNull()
 
     // Fetch IMDb / Rotten Tomatoes scores for whatever is in the hero (after a short pause).
     LaunchedEffect(hero?.id) {
@@ -126,22 +128,13 @@ fun HomeScreen(
 
     // Rows: Continue watching / Next up / Latest added, switched with the chips above the posters.
     var selected by remember { mutableStateOf("Continue watching") }
-    val sections = listOf("Continue watching", "Next up", "Latest added")
-        .filter { s -> state.cards.any { it.section == s } }
+    val sections = listOf("Continue watching")
     val active = if (selected in sections) selected else sections.firstOrNull() ?: "Continue watching"
-    val stripCards = state.cards.filter { it.section == active }
-
-    // Slow zoom on the backdrop so the screen feels alive.
-    val zoom by rememberInfiniteTransition(label = "kb").animateFloat(
-        initialValue = 1f,
-        targetValue = 1.07f,
-        animationSpec = infiniteRepeatable(tween(24000, easing = LinearEasing), RepeatMode.Reverse),
-        label = "zoom",
-    )
+    val stripCards = watching
 
     // Put focus on the newest Continue Watching item whenever the list's first entry changes.
     val firstCardFocus = remember { FocusRequester() }
-    val firstId = state.cards.firstOrNull()?.id
+    val firstId = watching.firstOrNull()?.id
     LaunchedEffect(firstId) {
         if (firstId != null) {
             delay(150)
@@ -150,36 +143,18 @@ fun HomeScreen(
     }
 
     Box(Modifier.fillMaxSize().background(Bg)) {
-        // Backdrop of the focused item, dimmed so text and icons stay readable.
-        Crossfade(
-            targetState = hero?.heroImage,
-            animationSpec = tween(800),
-            modifier = Modifier.fillMaxSize().graphicsLayer { scaleX = zoom; scaleY = zoom },
-            label = "hero",
-        ) { url ->
-            if (url != null) {
-                AsyncImage(
-                    model = url,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-        }
+        // Calm dark background (no picture behind the apps), with a faint blue glow.
         Box(
             Modifier.fillMaxSize().background(
-                Brush.horizontalGradient(
-                    0f to Bg.copy(alpha = 0.97f),
-                    0.45f to Bg.copy(alpha = 0.82f),
-                    1f to Bg.copy(alpha = 0.40f),
-                )
+                Brush.verticalGradient(listOf(Color(0xFF0A0E18), Color(0xFF0B1322), Color(0xFF070A12)))
             )
         )
         Box(
             Modifier.fillMaxSize().background(
-                Brush.verticalGradient(
-                    0.55f to Color.Transparent,
-                    1f to Bg,
+                Brush.radialGradient(
+                    colors = listOf(Color(0x40305A9E), Color.Transparent),
+                    center = Offset(1500f, 150f),
+                    radius = 1400f,
                 )
             )
         )
@@ -191,7 +166,7 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Logo(greeting(state.userName))
+                Spacer(Modifier.width(1.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (state.update != null) {
                         FocusCard(
@@ -221,10 +196,10 @@ fun HomeScreen(
                 Modifier.weight(1f).fillMaxWidth().padding(start = 48.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(Modifier.weight(0.4f).padding(end = 24.dp)) {
+                Box(Modifier.weight(0.38f).padding(end = 24.dp)) {
                     if (hero != null) HeroDetails(hero, u, state.scores[hero.id])
                 }
-                Column(Modifier.weight(0.6f)) {
+                Column(Modifier.weight(0.62f)) {
                     if (sections.size > 1) {
                         Row(
                             Modifier.padding(start = 4.dp),
@@ -245,7 +220,7 @@ fun HomeScreen(
                     } else {
                         Text(
                             active,
-                            color = Color.White.copy(alpha = 0.75f),
+                            color = Color.White,
                             fontSize = 13.sp,
                             modifier = Modifier.padding(start = 8.dp),
                         )
@@ -285,20 +260,10 @@ fun HomeScreen(
                 Row(
                     Modifier
                         .clip(RoundedCornerShape(26.dp))
-                        .background(
-                            Brush.verticalGradient(
-                                listOf(Color.White.copy(alpha = 0.26f), Color.White.copy(alpha = 0.08f))
-                            )
-                        )
-                        .border(
-                            1.2.dp,
-                            Brush.verticalGradient(
-                                listOf(Color.White.copy(alpha = 0.65f), Color.White.copy(alpha = 0.08f))
-                            ),
-                            RoundedCornerShape(26.dp),
-                        )
-                        .padding(9.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        .background(Color.White.copy(alpha = 0.05f))
+                        .border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(26.dp))
+                        .padding(horizontal = 12.dp, vertical = 9.dp),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     for (app in state.dockApps) {
@@ -308,12 +273,11 @@ fun HomeScreen(
                             onFocused = { dockLabel = app.label },
                             onClick = { onLaunchApp(app) },
                         ) {
-                            Box(Modifier.fillMaxSize().background(CardBg))
                             Image(
                                 bitmap = app.icon,
                                 contentDescription = app.label,
                                 contentScale = ContentScale.Fit,
-                                modifier = Modifier.fillMaxSize().padding(4.dp),
+                                modifier = Modifier.fillMaxSize().padding(2.dp),
                             )
                         }
                     }
@@ -323,7 +287,7 @@ fun HomeScreen(
                         onFocused = { dockLabel = "All apps" },
                         onClick = onAllApps,
                     ) {
-                        Box(Modifier.fillMaxSize().background(CardBg), contentAlignment = Alignment.Center) {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             AllAppsGlyph()
                         }
                     }
@@ -333,7 +297,7 @@ fun HomeScreen(
                         onFocused = { dockLabel = "Settings" },
                         onClick = onSettings,
                     ) {
-                        Box(Modifier.fillMaxSize().background(CardBg), contentAlignment = Alignment.Center) {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             SettingsGlyph()
                         }
                     }
@@ -351,7 +315,7 @@ private fun HeroDetails(hero: ResumeCard, u: Float, scores: Scores?) {
             Text(
                 hero.kicker,
                 color = Gold,
-                fontSize = 13.sp,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 2.sp,
                 style = TextStyle(fontFamily = FontFamily(android.graphics.Typeface.create("sans-serif-condensed", android.graphics.Typeface.BOLD))),
@@ -372,13 +336,13 @@ private fun HeroDetails(hero: ResumeCard, u: Float, scores: Scores?) {
             Text(
                 hero.title,
                 color = Color.White,
-                fontSize = 46.sp,
+                fontSize = 36.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 style = TextStyle(
                     fontFamily = FontFamily.Serif,
-                    lineHeight = 52.sp,
+                    lineHeight = 42.sp,
                     shadow = Shadow(Color.Black.copy(alpha = 0.6f), Offset(0f, 3f), 10f),
                 ),
             )
@@ -387,52 +351,25 @@ private fun HeroDetails(hero: ResumeCard, u: Float, scores: Scores?) {
             Spacer(Modifier.height(6.dp))
             Text(
                 hero.subtitle,
-                color = Color.White.copy(alpha = 0.92f),
-                fontSize = 19.sp,
+                color = Color.White.copy(alpha = 0.75f),
+                fontSize = 15.sp,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
-        }
-        if (hero.chips.isNotEmpty()) {
-            Spacer(Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                for (chip in hero.chips) {
-                    Text(
-                        chip,
-                        color = Color.White.copy(alpha = 0.92f),
-                        fontSize = 14.sp,
-                        maxLines = 1,
-                        modifier = Modifier
-                            .border(1.dp, Color.White.copy(alpha = 0.35f), RoundedCornerShape(4.dp))
-                            .padding(horizontal = 6.dp, vertical = 2.dp),
-                    )
-                }
-            }
         }
         RatingsRow(hero, scores)
         val status = listOf(hero.resumeAt, hero.remaining).filter { it.isNotEmpty() }.joinToString(" · ")
         if (status.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
-            Text(status, color = Color.White.copy(alpha = 0.9f), fontSize = 17.sp, fontWeight = FontWeight.Medium)
+            Text(status, color = Color.White.copy(alpha = 0.75f), fontSize = 14.sp)
         }
         if (hero.progress > 0f) {
             Spacer(Modifier.height(8.dp))
             Box(
-                Modifier.width(220.dp).height(4.dp).background(Color.White.copy(alpha = 0.25f))
+                Modifier.width(170.dp).height(3.dp).background(Color.White.copy(alpha = 0.25f))
             ) {
                 Box(Modifier.fillMaxHeight().fillMaxWidth(hero.progress.coerceIn(0f, 1f)).background(Gold))
             }
-        }
-        if (hero.overview.isNotEmpty()) {
-            Spacer(Modifier.height(10.dp))
-            Text(
-                hero.overview,
-                color = Color.White.copy(alpha = 0.82f),
-                fontSize = 16.sp,
-                lineHeight = 23.sp,
-                maxLines = 4,
-                overflow = TextOverflow.Ellipsis,
-            )
         }
     }
 }
@@ -500,8 +437,8 @@ private fun ScoreBadge(label: String, score: String, icon: @Composable () -> Uni
         icon()
         Spacer(Modifier.width(5.dp))
         Column {
-            Text(score, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1)
-            Text(label, color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp, maxLines = 1)
+            Text(score, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+            Text(label, color = Color.White.copy(alpha = 0.6f), fontSize = 10.sp, maxLines = 1)
         }
     }
 }
@@ -596,12 +533,6 @@ private fun PosterCard(
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        // soft shade at the bottom so the progress bar stays visible on bright posters
-        Box(
-            Modifier.align(Alignment.BottomStart).fillMaxWidth().height(56.dp).background(
-                Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f)))
-            )
-        )
         if (card.isNew) {
             Text(
                 "NEW",
@@ -614,14 +545,6 @@ private fun PosterCard(
                     .background(Gold, RoundedCornerShape(4.dp))
                     .padding(horizontal = 5.dp, vertical = 1.dp),
             )
-        }
-        if (card.progress > 0f) {
-            Box(
-                Modifier.align(Alignment.BottomStart).fillMaxWidth().height(5.dp)
-                    .background(Color.White.copy(alpha = 0.3f))
-            ) {
-                Box(Modifier.fillMaxHeight().fillMaxWidth(card.progress.coerceIn(0f, 1f)).background(Gold))
-            }
         }
     }
 }
