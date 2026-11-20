@@ -10,6 +10,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import app.jellylauncher.data.WHOLPHIN_PACKAGE
 import app.jellylauncher.data.LaunchableApp
 import app.jellylauncher.data.ResumeCard
@@ -18,6 +21,7 @@ import app.jellylauncher.ui.HomeScreen
 import app.jellylauncher.ui.JellyTheme
 import app.jellylauncher.ui.LoginScreen
 import app.jellylauncher.ui.SetupScreen
+import app.jellylauncher.ui.SettingsScreen
 import android.provider.Settings
 
 class MainActivity : ComponentActivity() {
@@ -30,6 +34,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             JellyTheme {
                 val state by viewModel.state.collectAsState()
+                var showMenu by remember { mutableStateOf(false) }
 
                 if (state.showLogin) {
                     LoginScreen(
@@ -51,6 +56,14 @@ class MainActivity : ComponentActivity() {
                         onHomeSettings = { openSettingsScreen(Settings.ACTION_HOME_SETTINGS) },
                         onDone = viewModel::closeSetup,
                     )
+                } else if (showMenu) {
+                    SettingsScreen(
+                        onServer = { showMenu = false; viewModel.openSettings() },
+                        onSetup = { showMenu = false; viewModel.openSetup() },
+                        onScreensaver = { openSettingsScreen(Settings.ACTION_DREAM_SETTINGS) },
+                        onUpdate = { viewModel.checkUpdateNow(); showMenu = false },
+                        onClose = { showMenu = false },
+                    )
                 } else if (state.showAllApps) {
                     AllAppsScreen(
                         visibleApps = state.visibleApps,
@@ -68,7 +81,7 @@ class MainActivity : ComponentActivity() {
                         onPlay = ::openInWholphin,
                         onLaunchApp = ::launchApp,
                         onAllApps = viewModel::openAllApps,
-                        onSettings = viewModel::openSettings,
+                        onSettings = { showMenu = true },
                         onSetup = viewModel::openSetup,
                         onUpdate = viewModel::installUpdate,
                         onHeroChanged = viewModel::loadScores,
@@ -97,8 +110,11 @@ class MainActivity : ComponentActivity() {
      * (position resumes where you left off). If that fails, Wholphin is simply opened.
      */
     private fun openInWholphin(card: ResumeCard) {
-        val direct = Intent(Intent.ACTION_VIEW).apply {
+        // Wholphin treats VIEW as "open the details page"; its PLAYBACK action starts playing.
+        val direct = Intent("com.github.damontecres.wholphin.PLAYBACK").apply {
             data = Uri.parse("wholphin://play?itemId=${card.id}&position=${card.positionMs}")
+            putExtra("itemId", card.id)
+            putExtra("position", card.positionMs)
             setPackage(WHOLPHIN_PACKAGE)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
