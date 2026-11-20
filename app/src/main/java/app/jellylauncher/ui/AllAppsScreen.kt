@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.sp
 import app.jellylauncher.data.LaunchableApp
 import kotlinx.coroutines.delay
 
-private val GoldDot = Color(0xFFFFC145)
+private val GoldDot = Color(0xFFE50914)
 
 @Composable
 fun AllAppsScreen(
