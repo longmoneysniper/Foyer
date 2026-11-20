@@ -79,7 +79,7 @@ import kotlinx.coroutines.delay
 import java.util.Calendar
 import java.util.Date
 
-private val Gold = Color(0xFFFFC145)
+private val Gold = Color(0xFFE50914) // accent: Netflix-style red
 
 @Composable
 fun HomeScreen(
@@ -99,8 +99,8 @@ fun HomeScreen(
 
     // Size things from the screen height so the layout fits any TV.
     val u = (LocalConfiguration.current.screenHeightDp / 540f).coerceIn(0.6f, 1.8f)
-    val posterHeight = (238 * u).dp
-    val posterWidth = (159 * u).dp
+    val posterHeight = (212 * u).dp
+    val posterWidth = (141 * u).dp
     val dockTile = (46 * u).dp
 
     var focusedId by remember { mutableStateOf<String?>(null) }
@@ -201,12 +201,12 @@ fun HomeScreen(
                             onClick = onUpdate,
                         ) {
                             Box(
-                                Modifier.background(Color(0xFF2A2210)).padding(horizontal = 14.dp),
+                                Modifier.background(Color(0xFFB20710)).padding(horizontal = 14.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text(
                                     state.updateStatus ?: "Update available · build ${state.update.build}",
-                                    color = Gold, fontSize = 13.sp, fontWeight = FontWeight.Bold,
+                                    color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold,
                                 )
                             }
                         }
@@ -252,15 +252,13 @@ fun HomeScreen(
                     }
                     if (stripCards.isNotEmpty()) {
                         LazyRow(
-                            contentPadding = PaddingValues(start = 8.dp, end = 48.dp, top = 12.dp, bottom = 12.dp),
+                            contentPadding = PaddingValues(start = 12.dp, end = 48.dp, top = 18.dp, bottom = 18.dp),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             itemsIndexed(stripCards, key = { _, card -> card.id }) { index, card ->
-                                val wide = index == 0 && card.cardImage != null
                                 PosterCard(
                                     card = card,
-                                    wide = wide,
-                                    width = if (wide) posterHeight * 1.6f else posterWidth,
+                                    width = posterWidth,
                                     height = posterHeight,
                                     focusRequester = if (index == 0) firstCardFocus else null,
                                     onFocused = {
@@ -452,7 +450,7 @@ private fun RatingsRow(card: ResumeCard, scores: Scores?) {
         val star = imdb ?: communityText
         if (star != null) {
             ScoreBadge(if (imdb != null) "IMDb" else "Community", star) {
-                RatingLogo(if (imdb != null) "rating_imdb" else "") { Text("★", color = Gold, fontSize = 18.sp) }
+                RatingLogo(if (imdb != null) "rating_imdb" else "") { Text("★", color = Color(0xFFF5C518), fontSize = 18.sp) }
             }
         }
         if (critics != null) {
@@ -567,7 +565,6 @@ private fun RowMessage(state: HomeUiState, height: Dp, onRetry: () -> Unit) {
 @Composable
 private fun PosterCard(
     card: ResumeCard,
-    wide: Boolean,
     width: Dp,
     height: Dp,
     focusRequester: FocusRequester?,
@@ -577,11 +574,12 @@ private fun PosterCard(
     FocusCard(
         modifier = Modifier.width(width).height(height),
         focusRequester = focusRequester,
+        shape = RoundedCornerShape(14.dp),
         onFocused = onFocused,
         onClick = onClick,
     ) {
         Box(Modifier.fillMaxSize().background(CardBg))
-        val image = if (wide) card.cardImage ?: card.poster else card.poster ?: card.cardImage
+        val image = card.poster ?: card.cardImage
         if (image != null) {
             AsyncImage(
                 model = image,
@@ -598,10 +596,16 @@ private fun PosterCard(
                 overflow = TextOverflow.Ellipsis,
             )
         }
+        // soft shade at the bottom so the progress bar stays visible on bright posters
+        Box(
+            Modifier.align(Alignment.BottomStart).fillMaxWidth().height(56.dp).background(
+                Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f)))
+            )
+        )
         if (card.isNew) {
             Text(
                 "NEW",
-                color = Color.Black,
+                color = Color.White,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
@@ -613,7 +617,7 @@ private fun PosterCard(
         }
         if (card.progress > 0f) {
             Box(
-                Modifier.align(Alignment.BottomStart).fillMaxWidth().height(4.dp)
+                Modifier.align(Alignment.BottomStart).fillMaxWidth().height(5.dp)
                     .background(Color.White.copy(alpha = 0.3f))
             ) {
                 Box(Modifier.fillMaxHeight().fillMaxWidth(card.progress.coerceIn(0f, 1f)).background(Gold))
@@ -642,7 +646,7 @@ internal fun FocusCard(
                 scaleY = scale
             }
             .clip(shape)
-            .then(if (focused) Modifier.border(3.dp, Gold, shape) else Modifier)
+            .then(if (focused) Modifier.border(3.dp, Color.White, shape) else Modifier)
             .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
             .onFocusChanged {
                 focused = it.isFocused
@@ -677,7 +681,7 @@ fun JellyMark(modifier: Modifier = Modifier) {
         val spill = Path().apply {
             moveTo(30f * s, 72f * s); lineTo(66f * s, 72f * s); lineTo(80f * s, 88f * s); lineTo(16f * s, 88f * s); close()
         }
-        drawPath(spill, Gold.copy(alpha = 0.25f))
+        drawPath(spill, Color(0xFFFFC145).copy(alpha = 0.25f))
         // the doorway
         val door = Path().apply {
             moveTo(30f * s, 72f * s)
@@ -686,7 +690,7 @@ fun JellyMark(modifier: Modifier = Modifier) {
             lineTo(66f * s, 72f * s)
             close()
         }
-        drawPath(door, Gold.copy(alpha = 0.15f))
+        drawPath(door, Color(0xFFFFC145).copy(alpha = 0.15f))
         drawPath(
             door,
             Brush.verticalGradient(listOf(Color(0xFFFFD166), Color(0xFFFF8A5B))),
