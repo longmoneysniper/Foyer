@@ -50,11 +50,11 @@ fun SetupScreen(
                 color = Color.White.copy(alpha = 0.75f), fontSize = 14.sp,
             )
             Spacer(Modifier.height(12.dp))
-            Text("1. Press \"Ask Android to make Foyer Home\". If a prompt appears, choose Foyer.", color = Color.White.copy(alpha = 0.85f), fontSize = 13.sp)
+            Text("1. Press \"Ask Android to make Encore Home\". If a prompt appears, choose Encore.", color = Color.White.copy(alpha = 0.85f), fontSize = 13.sp)
             Spacer(Modifier.height(6.dp))
-            Text("2. Otherwise open Accessibility and switch on \"Foyer home button\".", color = Color.White.copy(alpha = 0.85f), fontSize = 13.sp)
+            Text("2. Otherwise open Accessibility and switch on \"Encore home button\".", color = Color.White.copy(alpha = 0.85f), fontSize = 13.sp)
             Spacer(Modifier.height(6.dp))
-            Text("3. If that switch is greyed out or turns itself off, Android is blocking apps installed by hand. Open App info and look for \"Allow restricted settings\". If it isn't there, install Foyer once through its own Update button (it then counts as trusted), then try step 2 again.", color = Color.White.copy(alpha = 0.85f), fontSize = 13.sp)
+            Text("3. If that switch is greyed out or turns itself off, Android is blocking apps installed by hand. Open App info and look for \"Allow restricted settings\". If it isn't there, install Encore once through its own Update button (it then counts as trusted), then try step 2 again.", color = Color.White.copy(alpha = 0.85f), fontSize = 13.sp)
             Spacer(Modifier.height(6.dp))
             Text("4. Press Home on your remote. You should land here.", color = Color.White.copy(alpha = 0.85f), fontSize = 13.sp)
             Spacer(Modifier.height(16.dp))
@@ -66,7 +66,7 @@ fun SetupScreen(
         }
         Spacer(Modifier.width(40.dp))
         Column(Modifier.width(300.dp), verticalArrangement = Arrangement.Center) {
-            SetupButton("Ask Android to make Foyer Home", onRequestHome, first)
+            SetupButton("Ask Android to make Encore Home", onRequestHome, first)
             Spacer(Modifier.height(12.dp))
             SetupButton("Open Accessibility settings", onAccessibility)
             Spacer(Modifier.height(12.dp))
@@ -92,4 +92,3 @@ private fun SetupButton(label: String, onClick: () -> Unit, focusRequester: Focu
         }
     }
 }
-
