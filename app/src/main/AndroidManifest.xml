@@ -59,7 +59,7 @@
         <service
             android:name=".FoyerDream"
             android:exported="true"
-            android:label="Foyer backdrops"
+            android:label="Encore backdrops"
             android:permission="android.permission.BIND_DREAM_SERVICE">
             <intent-filter>
                 <action android:name="android.service.dreams.DreamService" />
@@ -70,7 +70,7 @@
         <service
             android:name=".HomeOverrideService"
             android:exported="true"
-            android:label="Foyer home button"
+            android:label="Encore home button"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
