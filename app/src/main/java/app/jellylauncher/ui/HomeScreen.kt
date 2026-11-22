@@ -192,7 +192,7 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Spacer(Modifier.width(1.dp))
+                Logo()
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (state.update != null) {
                         FocusCard(
@@ -596,20 +596,11 @@ internal fun FocusCard(
 }
 
 @Composable
-private fun Logo(greeting: String) {
+private fun Logo() {
     Row(verticalAlignment = Alignment.CenterVertically) {
         JellyMark(Modifier.size(28.dp))
-        Spacer(Modifier.width(8.dp))
-        Text(
-            "FOYER",
-            color = Color(0xFFE50914),
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 4.sp,
-            style = TextStyle(fontFamily = FontFamily(android.graphics.Typeface.create("sans-serif-condensed", android.graphics.Typeface.BOLD))),
-        )
-        Spacer(Modifier.width(14.dp))
-        Text(greeting, color = Color.White.copy(alpha = 0.55f), fontSize = 14.sp)
+        Spacer(Modifier.width(10.dp))
+        Text("Encore", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
     }
 }
 
