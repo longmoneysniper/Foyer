@@ -42,7 +42,7 @@ fun SettingsScreen(
             Row0("Settings")
             Spacer(Modifier.height(4.dp))
             SettingsButton("Server sign-in and ratings key", onServer, first)
-            SettingsButton("Make Foyer my home screen", onSetup)
+            SettingsButton("Make Encore my home screen", onSetup)
             SettingsButton("Screensaver (show your backdrops)", onScreensaver)
             SettingsButton("Check for updates", onUpdate)
             SettingsButton("Back", onClose)
