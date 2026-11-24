@@ -33,7 +33,7 @@ class AppsRepository(private val context: Context) {
                 if (!seen.add(pkg)) continue
 
                 val icon = try {
-                    info.loadIcon(pm).toBitmap(128, 128)
+                    stripDarkBackground(info.loadIcon(pm).toBitmap(128, 128))
                 } catch (e: Exception) {
                     continue
                 }
@@ -68,5 +68,45 @@ class AppsRepository(private val context: Context) {
                 )
             )
             .map { it.app }
+    }
+
+    /**
+     * Some app icons (Wholphin, for one) come with a solid black square behind the logo.
+     * If the icon's edge is mostly near-black, make that background transparent: flood in from
+     * the edges through near-black or already-transparent pixels, so dark parts inside the logo stay.
+     */
+    private fun stripDarkBackground(src: android.graphics.Bitmap): android.graphics.Bitmap {
+        val w = src.width
+        val h = src.height
+        val px = IntArray(w * h)
+        src.getPixels(px, 0, w, 0, 0, w, h)
+
+        fun clear(c: Int) = (c ushr 24) < 16
+        fun dark(c: Int) = (c ushr 24) >= 16 &&
+            ((c shr 16) and 255) < 56 && ((c shr 8) and 255) < 56 && (c and 255) < 56
+
+        val border = ArrayList<Int>()
+        for (x in 0 until w) { border.add(x); border.add((h - 1) * w + x) }
+        for (y in 0 until h) { border.add(y * w); border.add(y * w + w - 1) }
+        val darkCount = border.count { dark(px[it]) }
+        if (darkCount * 10 < border.size * 3) return src // edge is not mostly dark: leave it alone
+
+        val seen = BooleanArray(w * h)
+        val stack = IntArray(w * h)
+        var top = 0
+        for (i in border) {
+            if (!seen[i] && (dark(px[i]) || clear(px[i]))) { seen[i] = true; stack[top++] = i }
+        }
+        while (top > 0) {
+            val i = stack[--top]
+            px[i] = 0
+            val x = i % w
+            val y = i / w
+            if (x > 0) { val n = i - 1; if (!seen[n] && (dark(px[n]) || clear(px[n]))) { seen[n] = true; stack[top++] = n } }
+            if (x < w - 1) { val n = i + 1; if (!seen[n] && (dark(px[n]) || clear(px[n]))) { seen[n] = true; stack[top++] = n } }
+            if (y > 0) { val n = i - w; if (!seen[n] && (dark(px[n]) || clear(px[n]))) { seen[n] = true; stack[top++] = n } }
+            if (y < h - 1) { val n = i + w; if (!seen[n] && (dark(px[n]) || clear(px[n]))) { seen[n] = true; stack[top++] = n } }
+        }
+        return android.graphics.Bitmap.createBitmap(px, w, h, android.graphics.Bitmap.Config.ARGB_8888)
     }
 }
