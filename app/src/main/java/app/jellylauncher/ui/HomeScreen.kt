@@ -103,8 +103,8 @@ fun HomeScreen(
     // Size things from the screen height so the layout fits any TV.
     val u = (LocalConfiguration.current.screenHeightDp / 540f).coerceIn(0.6f, 1.8f)
     // Compact 16:9 artwork tiles keep the top half of the screen open for the backdrop.
-    val posterHeight = (84 * u).dp
-    val posterWidth = (149 * u).dp
+    val posterHeight = (96 * u).dp
+    val posterWidth = (171 * u).dp
     val dockTile = (40 * u).dp
     // One shared left safe-zone margin (~4.5% of the width) for logo, hero, heading and row.
     val edge = (LocalConfiguration.current.screenWidthDp * 0.045f).dp
@@ -122,6 +122,11 @@ fun HomeScreen(
     LaunchedEffect(state.cards) {
         for (c in state.cards.take(4)) {
             val url = c.heroImage ?: continue
+            context.imageLoader.enqueue(ImageRequest.Builder(context).data(url).build())
+        }
+        // Also warm the row tiles so they are already there when the row appears.
+        for (c in state.cards.take(8)) {
+            val url = c.cardImage ?: continue
             context.imageLoader.enqueue(ImageRequest.Builder(context).data(url).build())
         }
     }
@@ -154,7 +159,7 @@ fun HomeScreen(
     val allAppsIndex = dockApps.size
     val settingsIndex = dockApps.size + 1
     val dockFocused = dockIndex >= 0
-    val dockAlpha by animateFloatAsState(if (dockFocused) 1f else 0.55f, label = "dockAlpha")
+    val dockAlpha by animateFloatAsState(if (dockFocused) 1f else 0.8f, label = "dockAlpha")
 
     Box(Modifier.fillMaxSize().background(Bg)) {
         // Backdrop of the focused item, with a ~400 ms crossfade between items.
@@ -197,7 +202,7 @@ fun HomeScreen(
             )
         )
 
-        Column(Modifier.fillMaxSize().padding(top = 24.dp, bottom = 28.dp)) {
+        Column(Modifier.fillMaxSize().padding(top = 24.dp, bottom = dockTile + 64.dp)) {
             // Top bar
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = edge),
@@ -237,15 +242,12 @@ fun HomeScreen(
                 }
             } else {
                 Row(
-                    Modifier.fillMaxWidth().padding(start = edge, end = edge),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    Modifier.padding(start = edge),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(active, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                    val position = stripCards.indexOfFirst { it.id == hero?.id } + 1
-                    if (stripCards.size > 1 && position > 0) {
-                        Text("$position of ${stripCards.size}", color = Color.White.copy(alpha = 0.5f), fontSize = 12.sp)
-                    }
+                    Box(Modifier.width(3.dp).height(16.dp).background(Gold))
+                    Spacer(Modifier.width(8.dp))
+                    Text(active, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             }
             if (stripCards.isNotEmpty()) {
@@ -282,14 +284,18 @@ fun HomeScreen(
             } else {
                 RowMessage(state = state, height = posterHeight, start = edge, onRetry = onRetry)
             }
-            Spacer(Modifier.height(24.dp))
+
+        }
 
             // Dock: muted unless it has focus; the label floats above the focused icon.
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(bottom = 28.dp),
+                contentAlignment = Alignment.Center,
+            ) {
                 Row(
                     Modifier
                         .graphicsLayer { alpha = dockAlpha }
-                        .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(26.dp))
+                        .background(Color.White.copy(alpha = 0.09f), RoundedCornerShape(26.dp))
                         .border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(26.dp))
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(14.dp),
@@ -332,7 +338,6 @@ fun HomeScreen(
                     }
                 }
             }
-        }
     }
 }
 
