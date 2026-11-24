@@ -102,9 +102,9 @@ fun HomeScreen(
 
     // Size things from the screen height so the layout fits any TV.
     val u = (LocalConfiguration.current.screenHeightDp / 540f).coerceIn(0.6f, 1.8f)
-    // Compact 16:9 artwork tiles keep the top half of the screen open for the backdrop.
-    val posterHeight = (96 * u).dp
-    val posterWidth = (171 * u).dp
+    // Tall 2:3 posters, bottom-anchored so the top half of the screen stays open.
+    val posterHeight = (150 * u).dp
+    val posterWidth = (100 * u).dp
     val dockTile = (40 * u).dp
     // One shared left safe-zone margin (~4.5% of the width) for logo, hero, heading and row.
     val edge = (LocalConfiguration.current.screenWidthDp * 0.045f).dp
@@ -122,6 +122,11 @@ fun HomeScreen(
     LaunchedEffect(state.cards) {
         for (c in state.cards.take(4)) {
             val url = c.heroImage ?: continue
+            context.imageLoader.enqueue(ImageRequest.Builder(context).data(url).build())
+        }
+        // Also warm the row tiles so they are already there when the row appears.
+        for (c in state.cards.take(8)) {
+            val url = c.poster ?: c.cardImage ?: continue
             context.imageLoader.enqueue(ImageRequest.Builder(context).data(url).build())
         }
     }
@@ -266,7 +271,7 @@ fun HomeScreen(
                     }
                 }
                 // Soft fade on the right edge hints that the row scrolls.
-                if (stripCards.size > 5) {
+                if (stripCards.size > 8) {
                     Box(
                         Modifier
                             .align(Alignment.CenterEnd)
@@ -570,7 +575,7 @@ private fun PosterCard(
     onFocused: () -> Unit,
     onClick: () -> Unit,
 ) {
-    // Pure 16:9 artwork: no badges, bars, titles or gradients on the card.
+    // Pure poster artwork: no badges, bars, titles or gradients on the card.
     FocusCard(
         modifier = Modifier.width(width).height(height),
         focusRequester = focusRequester,
@@ -579,7 +584,7 @@ private fun PosterCard(
         onClick = onClick,
     ) {
         Box(Modifier.fillMaxSize().background(CardBg))
-        val image = card.cardImage ?: card.poster
+        val image = card.poster ?: card.cardImage
         if (image != null) {
             AsyncImage(
                 model = image,
