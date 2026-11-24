@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import app.jellylauncher.data.AppsRepository
 import app.jellylauncher.data.AuthExpiredException
 import app.jellylauncher.data.JellyfinApi
+import app.jellylauncher.data.JfItem
 import app.jellylauncher.data.LaunchableApp
 import app.jellylauncher.data.Prefs
 import app.jellylauncher.data.RatingsRepository
@@ -154,8 +155,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         refreshJob = viewModelScope.launch {
             try {
                 val resume = api.continueWatching()
-                val next = try { api.nextUp() } catch (e: AuthExpiredException) { throw e } catch (e: CancellationException) { throw e } catch (e: Exception) { emptyList() }
-                val latest = try { api.latest() } catch (e: AuthExpiredException) { throw e } catch (e: CancellationException) { throw e } catch (e: Exception) { emptyList() }
+                // Only Continue watching is shown, so skip the two extra server calls (faster start).
+                val next = emptyList<JfItem>()
+                val latest = emptyList<JfItem>()
                 val seen = mutableSetOf<String>()
                 val cards = (resume.map { api.toCard(it, "Continue watching") } +
                     next.map { api.toCard(it, "Next up") } +
