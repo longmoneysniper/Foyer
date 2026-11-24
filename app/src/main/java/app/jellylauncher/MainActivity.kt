@@ -61,7 +61,17 @@ class MainActivity : ComponentActivity() {
                         onServer = { showMenu = false; viewModel.openSettings() },
                         onSetup = { showMenu = false; viewModel.openSetup() },
                         onScreensaver = { openSettingsScreen(Settings.ACTION_DREAM_SETTINGS) },
-                        onUpdate = { viewModel.checkUpdateNow(); showMenu = false },
+                        updateLabel = state.updateStatus
+                            ?: state.update?.let { "Install update (build ${it.build})" }
+                            ?: "Check for updates",
+                        onUpdate = {
+                            if (state.update != null) {
+                                viewModel.installUpdate()
+                            } else {
+                                viewModel.checkUpdateNow()
+                                showMenu = false
+                            }
+                        },
                         onClose = { showMenu = false },
                     )
                 } else if (state.showAllApps) {
