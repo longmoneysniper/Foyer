@@ -124,11 +124,6 @@ fun HomeScreen(
             val url = c.heroImage ?: continue
             context.imageLoader.enqueue(ImageRequest.Builder(context).data(url).build())
         }
-        // Also warm the row tiles so they are already there when the row appears.
-        for (c in state.cards.take(8)) {
-            val url = c.cardImage ?: continue
-            context.imageLoader.enqueue(ImageRequest.Builder(context).data(url).build())
-        }
     }
 
     // Rows: Continue watching / Next up / Latest added, switched with the chips above the posters.
