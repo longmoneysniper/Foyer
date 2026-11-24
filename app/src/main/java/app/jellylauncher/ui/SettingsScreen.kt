@@ -30,6 +30,7 @@ fun SettingsScreen(
     onServer: () -> Unit,
     onSetup: () -> Unit,
     onScreensaver: () -> Unit,
+    updateLabel: String,
     onUpdate: () -> Unit,
     onClose: () -> Unit,
 ) {
@@ -44,7 +45,7 @@ fun SettingsScreen(
             SettingsButton("Server sign-in and ratings key", onServer, first)
             SettingsButton("Make Encore my home screen", onSetup)
             SettingsButton("Screensaver (show your backdrops)", onScreensaver)
-            SettingsButton("Check for updates", onUpdate)
+            SettingsButton(updateLabel, onUpdate)
             SettingsButton("Back", onClose)
         }
     }
